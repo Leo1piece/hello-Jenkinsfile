@@ -14,13 +14,13 @@ jobs:
     - uses: Azure/get-keyvault-secrets@v1
       with: 
         keyvault: "keyvaultleo666"
-        secrets: 'containerPassword, containerUsername'
+        secrets: 'containerPasswordleo, containerUsername'
       id: myGetSecretAction
     - uses: azure/docker-login@v1
       with:
         login-server: acr4aksdemo.azurecr.io
         username: ${{ steps.myGetSecretAction.outputs.containerUsername }}
-        password: ${{ steps.myGetSecretAction.outputs.containerPassword }}
+        password: ${{ steps.myGetSecretAction.outputs.containerPasswordleo }}
     - run: |
         docker build . -t acr4aksdemo.azurecr.io/myapp:${{ github.sha }}
         docker push acr4aksdemo.azurecr.io/myapp:${{ github.sha }}     
