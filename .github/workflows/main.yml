@@ -10,3 +10,13 @@ jobs:
         uses: azure/login@v1
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          
+      - name: Retrieve secret
+        id: retrieve-secret
+        uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault-name: 'keyvaultleo666' 
+          secrets: 'env2'
+
+      - name: Print Secret Value
+        run: echo "${{ steps.retrieve-secret.outputs.env2 }}"
