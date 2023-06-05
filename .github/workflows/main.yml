@@ -1,25 +1,31 @@
-name: AzureLoginSample
+name: Example key vault flow
 
 on: [push]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Log in with Azure
-      uses: azure/login@v1
+    # checkout the repo
+    - uses: actions/checkout@v2
+    - uses: Azure/login@v1
       with:
-        creds: '${{ secrets.AZURE_CREDENTIALS }}'
-          
-    - name: Retrieve secret
-      id: retrieve-secret
-      uses: Azure/get-keyvault-secrets@v1
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - uses: Azure/get-keyvault-secrets@v1
+      with: 
+        keyvault: "keyvaultleo666"
+        secrets: 'containerPassword, containerUsername'
+      id: myGetSecretAction
+    - uses: azure/docker-login@v1
       with:
-        keyvault: 'keyvaultleo666' 
-        secrets: 'env2'
-
-    - name: Print Secret Value
-      run: echo "${{ steps.retrieve-secret.outputs.env2 }}"
+        login-server: acr4aksdemo.azurecr.io
+        username: ${{ steps.myGetSecretAction.outputs.containerUsername }}
+        password: ${{ steps.myGetSecretAction.outputs.containerPassword }}
+    - run: |
+        docker build . -t acr4aksdemo.azurecr.io/myapp:${{ github.sha }}
+        docker push acr4aksdemo.azurecr.io/myapp:${{ github.sha }}     
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'myapp'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        images: 'acr4aksdemo.azurecr.io/myapp:${{ github.sha }}'     
